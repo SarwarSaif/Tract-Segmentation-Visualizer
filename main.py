@@ -40,6 +40,8 @@ from dipy.tracking.vox2track import streamline_mapping
 from pykdtree.kdtree import KDTree
 import kd_tree_segmentation as kdts
 from kd_tree_segmentation import kd2 
+import tkinter.font as tkFont
+import tkinter as tk
 #from kd_tree_segmentation.kd2 import 
 interactive = False  # set to True to show the interactive display window
 
@@ -77,7 +79,7 @@ class MainWindow(Qt.QMainWindow):
         print("Ki shomossha! ",fileName," 2 ",fileName2)
         if self.method == 1:
             print(fileName2)
-            segmented_tract_positive, segmented_tract_negative = self.oneClassSVM(whole_brain_id, fileName2, self.tract)
+            segmented_tract_positive, segmented_tract_negative = kd2.oneClassSVM(self, filename_tractogram, fileName2, self.tract)
             color_tract = colors.blue
         else:
             segmented_tract_positive, segmented_tract_negative = kd2.segmentation_with_NN(self, filename_tractogram, fileName2, self.no_of_points, self.leafsize, self.tract)
@@ -160,18 +162,18 @@ class MainWindow(Qt.QMainWindow):
         return  wholeTract    
 
     def openTractFilesDialog(self):
-        global Tract_fileName 
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
-        fileWithPath, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "","Track Files (*.trk)", options=options)
-        Tract_fileName=os.path.basename(fileWithPath)
+        # global Tract_fileName 
+        # options = QFileDialog.Options()
+        # options |= QFileDialog.DontUseNativeDialog
+        # fileWithPath, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "","Track Files (*.trk)", options=options)
+        # Tract_fileName=os.path.basename(fileWithPath)
         
-        splitFile=Tract_fileName.split(".")[0]
-        print(splitFile)
+        # splitFile=Tract_fileName.split(".")[0]
+        # print(splitFile)
 
         
-        dest="AllPickles/"+Tract_fileName
-        #copyfile(fileWithPath, dest)
+        # dest="AllPickles/"+Tract_fileName
+        # #copyfile(fileWithPath, dest)
         self.combo.clear()
         self.tract_name2 = []
         root_dir = 'G:\\Thesis\\ThesisIm plementations\\Tract Segmentation Visualizer\\Tract-Segmentation-Visualizer\\Tracts\\AF\\Left'
@@ -326,8 +328,13 @@ class MainWindow(Qt.QMainWindow):
 
     def VerticalLayout(self):
 
-        self.vMain = Qt.QHBoxLayout()
-        groupBox1 = QGroupBox("Select Whole Brain")
+        # root =  tk.Tk()
+        # helv36 = tkFont.Font(root, family = "Helvetica",size = 36,weight = "bold")
+        # tkFont.families()
+
+        
+        self.vMain = Qt.QHBoxLayout() ## Added horizontal box layout
+        groupBox1 = QGroupBox("Select Whole Brain") 
         whole_brain = []
         for (dirpath, dirnames, filenames) in os.walk("WholeBrains"):
             whole_brain.extend(filenames)
@@ -335,7 +342,12 @@ class MainWindow(Qt.QMainWindow):
 
         self.combo_box1 = QComboBox()
         self.combo_box1.addItems(whole_brain)
-        button_box1 = QPushButton("Add")
+        button_box1 = QPushButton('Add')
+        ## Creating font with QtFont
+        font = QtGui.QFont()
+        font.setFamily("Helvetica")
+        font.setBold(True)
+        button_box1.setFont(font)
         button_box2 = QPushButton("Okay")
 
         button_box2.clicked.connect(self.clickMethod)
@@ -345,7 +357,7 @@ class MainWindow(Qt.QMainWindow):
         groupBox1.setStyleSheet("background-color: #EAEAEA")
         self.combo_box1.setStyleSheet("background-color: #99FFEF")
         button_box1.setStyleSheet("background-color: #00A0A0")
-        button_box2.setStyleSheet("background-color: #4CFF00")
+        button_box2.setStyleSheet("background-color: #72d874")
         
         vbox = Qt.QVBoxLayout()
         vbox.addWidget(self.combo_box1)

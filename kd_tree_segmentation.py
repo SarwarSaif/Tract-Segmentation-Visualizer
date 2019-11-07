@@ -79,7 +79,7 @@ class kd2:
         
         ################################ Train Data ######################################
         print ("Preparing Train Data")
-        resample_tract_train, train_data= self.CreateModelTracts_for_SVM(model_tracts, tract)    
+        resample_tract_train, train_data= kd2.CreateModelTracts_for_SVM(self, model_tracts, tract)    
     
         ###################### Test Data################################
         testTarget = "161731"
@@ -89,8 +89,8 @@ class kd2:
         testTarget_brain = "full1M_"+whole_brain_id+".trk"
         
         t0=time.time()
-        resample_tract_test, test_data= self.create_test_data_set(testTarget_brain)
-        trueTract= self.load(whole_brain_id + tract)  
+        resample_tract_test, test_data= kd2.create_test_data_set(self, whole_brain_id)
+        #trueTract= self.load(whole_brain_id + tract)  
         t1=t0-time.time()
         
         """###########################one class SVM######################"""
