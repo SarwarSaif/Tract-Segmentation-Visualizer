@@ -19,6 +19,8 @@ from PyQt5.QtWidgets import QLabel,QRadioButton,QComboBox,QPushButton, QAction, 
 from PyQt5.QtGui import QIcon
 import PyQt5.QtGui
 
+from PyQt5 import QtCore, QtWidgets
+
 from dipy.data import fetch_bundles_2_subjects, read_bundles_2_subjects
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from dipy.tracking.streamline import transform_streamlines, length
@@ -46,10 +48,109 @@ from preprocessing import preprocessing as pre
 
 import tkinter.font as tkFont
 import tkinter as tk
-#from kd_tree_segmentation.kd2 import 
+
+######### time to import matplotlib functions ############
+import matplotlib
+# Make sure that we are using QT5
+matplotlib.use('Qt5Agg')
+from numpy import arange, sin, pi
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+
+progname = os.path.basename(sys.argv[0])
+progversion = "0.1"
+
+class MyMplCanvas(FigureCanvas):
+    """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
+
+    def __init__(self, parent=None, width=5, height=4, dpi=100, x=np.random.normal(size = 1000)):
+        fig = Figure(figsize=(width, height), dpi=dpi)
+        self.axes = fig.add_subplot(111)
+
+        self.compute_initial_figure(x)
+
+        FigureCanvas.__init__(self, fig)
+        self.setParent(parent)
+
+        FigureCanvas.setSizePolicy(self,
+                                   QtWidgets.QSizePolicy.Expanding,
+                                   QtWidgets.QSizePolicy.Expanding)
+        FigureCanvas.updateGeometry(self)
+
+    def compute_initial_figure(self):
+        pass
+
+
+class MyStaticMplCanvas(MyMplCanvas):
+    """Simple canvas with a sine plot."""
+
+    def compute_initial_figure(self,x):
+        # t = arange(0.0, 3.0, 0.01)
+        # s = sin(2*pi*t)
+        # self.axes.plot(t, s)
+
+        # Plot Histogram on x
+        #x = np.random.normal(size = 1000)
+        self.axes.hist(x, bins=50)
+        #self.axes.gca().set(title='Frequency Histogram', ylabel='Frequency')
+    def update_figure(self,x):
+        # Build a list of 4 random integers between 0 and 10 (both inclusive)
+        self.axes.cla()
+        self.axes.hist(x, bins=50)
+        self.draw()
+
+
+class MyDynamicMplCanvas(MyMplCanvas):
+    """A canvas that updates itself every second with a new plot."""
+    #from mainCheck import MainWindow
+    
+
+    def __init__(self, *args, **kwargs):
+        MyMplCanvas.__init__(self, *args, **kwargs)
+        
+        #self.listen = MainWindow.getListener(MainWindow())
+        #print(listen)
+        # if(listen):
+        #     print(listen)
+        #self.update_figure
+        # timer = QtCore.QTimer(self)
+        # timer.timeout.connect(self.update_figure)
+        # timer.start(1000)
+
+    def compute_initial_figure(self, x):
+        # from mainCheck import MainWindow
+        # object1 = MainWindow()
+        #self.object2 = None
+        #global object2 
+        #self.object2 = object1
+        self.axes.hist(x, bins=50)
+
+    def update_figure(self):
+        # Build a list of 4 random integers between 0 and 10 (both inclusive)
+        #l = [random.randint(0, 10) for i in range(4)]
+        from mainCheck import MainWindow
+        object1 = MainWindow()
+        x = object1.getX()
+        # isUpdatable=object1.setListener()
+        print("Ha ami ashsi update korte")
+        # if(isUpdatable):
+        self.axes.cla()
+        self.axes.hist(x, bins=50)
+        self.draw()
+
+
+
 interactive = False  # set to True to show the interactive display window
 
 class MainWindow(Qt.QMainWindow):
+
+    def getListener(self):
+        return self.listener
+    def setListener(self):
+        self.listener = False
+    
+    def getX(self):
+        return self.whole_brain_length_info_all
     
     def load_streamline2(self,whole_brain_tractogram,fileName2):
         from fury import window
@@ -74,6 +175,9 @@ class MainWindow(Qt.QMainWindow):
         
         
         ########### Statistical Analysis ################
+        self.whole_brain_length_info_all = stat.length_info_all(self, test_data)
+        self.listener = True
+        xw = self.whole_brain_length_info_all
         whole_brain_length_info= np.array(stat.length_info (self, test_data))
         max_label = "\nMaximum length of tracts: " + str(whole_brain_length_info[0])
         min_label = "\nMinimum length of tracts: "+  str(whole_brain_length_info[1])
@@ -88,7 +192,36 @@ class MainWindow(Qt.QMainWindow):
         #self.dev_no_streamlines_label.setText(dev_streamline_count_label)
         self.no_voxels_label.setText(voxel_count_label)
         #self.dev_no_voxels_label.setText(dev_voxel_count_label)
+        ####### Adding Matplotlib
+        from mainCheck import MyDynamicMplCanvas as mp 
+        from mainCheck import MyMplCanvas as mc
         
+        #self.main_widget.update_figure
+
+
+        # self.main_widget = QtWidgets.QWidget(self)
+        # print(self.whole_brain_length_info_all)
+        # l = QtWidgets.QVBoxLayout(self.main_widget)
+        # sc = MyStaticMplCanvas(self.main_widget, width=5, height=4, dpi=100, x=self.whole_brain_length_info_all)
+        # l.addWidget(sc)
+        # self.main_widget.setFocus()
+        # self.setCentralWidget(self.main_widget)
+        # self.predBox.addWidget(self.main_widget)
+
+        # self.predBox.addStretch(2)
+
+
+        # self.statBox.setLayout(self.predBox)
+        # main_widget = QtWidgets.QWidget(self)
+        # l = QtWidgets.QVBoxLayout(main_widget)
+        # sc = MyStaticMplCanvas(main_widget, width=5, height=4, dpi=100, x=self.whole_brain_length_info_all)
+        # l.addWidget(sc)
+        # main_widget.setFocus()
+        # self.setCentralWidget(main_widget)
+        # self.predBox.addWidget(main_widget)
+        # self.predBox.widget
+
+
         
         #tract_transform = transform_streamlines(test_data, np.linalg.inv(affine))
         #stream_actor = actor.line(tract_transform,(1., 0.5, 0))
@@ -110,7 +243,9 @@ class MainWindow(Qt.QMainWindow):
         self.iren = self.vtkWidget2.GetRenderWindow().GetInteractor()
         self.iren.Initialize()
         self.iren.Start()
-    
+    def action_reload(self): 
+        Qt.QMainWindow.update(self)
+
     def load_whole_brain(self,fileName):
         from fury import window
         scene = window.Scene()
@@ -305,8 +440,20 @@ class MainWindow(Qt.QMainWindow):
         self.predBox.addWidget(self.dev_no_streamlines_label)
         self.predBox.addWidget(self.no_voxels_label)
         self.predBox.addWidget(self.dev_no_voxels_label)
+
+        ####### Adding Matplotlib
+        self.main_widget = QtWidgets.QWidget(self)
+        print(self.whole_brain_length_info_all)
+        self.l = QtWidgets.QVBoxLayout(self.main_widget)
+        self.sc = MyDynamicMplCanvas(self.main_widget, width=5, height=4, dpi=100, x=self.whole_brain_length_info_all)
+        self.l.addWidget(self.sc)
+        self.main_widget.setFocus()
+        self.setCentralWidget(self.main_widget)
+        self.predBox.addWidget(self.main_widget)
+
         self.predBox.addStretch(2)
-        
+
+
         self.statBox.setLayout(self.predBox)
 
     def VerticalLayout(self):
@@ -433,7 +580,7 @@ class MainWindow(Qt.QMainWindow):
         self.vMain.addWidget(groupBox3)
         self.vMain.addWidget(self.createTrainingBox)
         #verbox.addLayout(self.vMain)
-
+    
     def __init__(self, parent = None):
         
         Qt.QMainWindow.__init__(self, parent)
@@ -449,7 +596,10 @@ class MainWindow(Qt.QMainWindow):
         left = height // 6
         width = (width // 6) * 4
         height = (height // 6) * 4
-
+        ######## Initialized hist plot for whole brain
+        self.whole_brain_length_info_all = np.random.normal(size = 1000)
+        xw = self.whole_brain_length_info_all
+        self.listener = False
         # menubar = self.menuBar()
         # fileMenu = menubar.addMenu('File ')
         # newAct = QAction('New', self)                
